@@ -12,7 +12,7 @@
               <h1>{{ post.title }}</h1>
               <span class="meta">Posted by
                 <a href="#">{{ post.username }}</a>
-                on {{ post.createdAt.toDateString() }}
+            on {{ post.createdAt.toDateString() }}
               </span>
             </div>
           </div>
@@ -27,9 +27,25 @@
           <div class="col-lg-8 col-md-10 mx-auto">
             {{ post.content }}
           </div>
+         
         </div>
+        
       </div>
+
     </article>
- 
+        
+           <div class="form-group my-4 text-center">
+         <form action="/posts/update">
+    <button class="btn btn-primary">Update</button>
+    
+</form></div>
+          <div class="form-group my-4 text-center">
+         <form action="/posts/delete">
+        <button class="btn btn-primary">Delete</button>
+
+    
+</form>
+
+        </div>
     <hr>
 @endsection

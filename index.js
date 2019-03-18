@@ -19,8 +19,10 @@ mongoose.connect(conString, { useNewUrlParser: true })
     const bodyParser = require('body-parser');
 const Post = require('./database/models/Post');
 const port= process.env.PORT || 5000;
+var postid;
 const createUserController = require("./controllers/createUser");
 const storeUserController = require('./controllers/storeUser');
+const updatepostcontroller = require('./controllers/updatePost');
 const loginController = require("./controllers/login");
 const expressSession = require('express-session');
 const loginUserController = require('./controllers/loginUser');
@@ -30,6 +32,7 @@ const authorization= require('./middleware/authorization')
 const logoutController = require("./controllers/logout");
 var mongoos = require('mongoose');
 const userob = require('./database/models/User')
+var mongoObject;
 var userobj={};
 app.use(bodyParser.json())
 app.use(connectFlash());
@@ -60,7 +63,7 @@ app.use("/",express.static(path.join(__dirname,"public")));
 
 app.get('/home', redirectIfAuthenticated,(req, res) => {
    mongoobjectid= req.session.userId;
-   var mongoObject = mongoos.Types.ObjectId(mongoobjectid);
+   mongoObject = mongoos.Types.ObjectId(mongoobjectid);
     userob.findById(mongoObject, (error, user) => {
         if (user) {
            userobj= user;
@@ -75,10 +78,35 @@ app.get('/home', redirectIfAuthenticated,(req, res) => {
    })
   
 });  
-
-
-
-
+app.get("/posts/update",updatepostcontroller);
+var options = {
+    // Return the document after updates are applied
+    new: true,
+    // Create a document if one isn't found. Required
+    // for `setDefaultsOnInsert`
+    upsert: true,
+    setDefaultsOnInsert: true
+  };
+  
+app.post('/posts/update1', (req, res) => {
+    Post.findOneAndUpdate({_id:postid},{mids:mongoobjectid,title:req.body.title,description:req.body.description,content:req.body.content,username:req.body.username}, options,function(err, doc){
+       console.log(doc);
+        if (err) console.log(error);
+        else{
+            res.redirect("/home");
+        }
+    });
+  
+   
+});
+app.get("/posts/delete",function(req,res){
+    Post.deleteOne({_id:postid},function(err){
+        if(err){
+            console.log(err);
+        }
+        res.redirect("/home");
+    })
+})
 app.get("/auth/logout", auth, logoutController);
 app.get("/auth/register", authorization,createUserController);
 app.post("/users/register", storeUserController);
@@ -88,11 +116,14 @@ app.get("/posts/new", auth, createPostController);
 
 app.post('/users/login',loginUserController.authenticate);
 app.get('/post/:id', async (req, res) => {
+    
+     postid = mongoose.Types.ObjectId(req.params.id);
     const post = await Post.findById(req.params.id)
     res.render('post', {
         post
     })
 });
+
 
 app.post('/posts/store', (req, res) => {
     Post.create({mids:mongoobjectid,title:req.body.title,description:req.body.description,content:req.body.content,username:req.body.username,createdAt:req.body.createdAt}, (error, post) => {
